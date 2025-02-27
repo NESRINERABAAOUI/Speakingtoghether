@@ -1,8 +1,7 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
 const tables = require("../../database/tables");
 const jwtSecretKey = process.env.JWT_SECRET_TOKEN;
-
 
 // The B of BREAD - Browse (Read All) operation
 const browse = async (req, res, next) => {
@@ -45,7 +44,7 @@ const add = async (req, res, next) => {
   try {
     // Insert the user into the database
     const insertId = await tables.user.create(userBody);
-    console.log(req.body)
+    console.log(req.body);
     // Respond with HTTP 201 (Created) user
     res.status(201).json({ insertId });
   } catch (err) {
@@ -91,50 +90,59 @@ const destroy = async (req, res, next) => {
 // Handling login
 const login = async (req, res) => {
   const { Email, Password } = req.body;
-  let RoleUser
+  let RoleUser;
 
   try {
     let user;
-   // Vérifier si l'utilisateur est un client
-   user = await tables.client.findOne(Email);
-   if (user) RoleUser = 'C';
+    // Vérifier si l'utilisateur est un client
+    user = await tables.client.findOne(Email);
+    if (user) RoleUser = "C";
 
-   // Si pas trouvé, vérifier si c'est un traducteur
-   if (!user) {
-     user = await tables.translator.findOne(Email);
-     if (user) RoleUser = 'T';
-   }
-
-   // Si pas trouvé, vérifier si c'est un admin
-   if (!user) {
-     user = await tables.admin.findOne(Email);
-     if (user) RoleUser = 'A';
-   }
-
-   // Si aucun utilisateur trouvé
-   if (!user) {
-     return res.status(401).json({ success: false, message: "Authentication failed. User not found." });
-   }
-    
+    // Si pas trouvé, vérifier si c'est un traducteur
     if (!user) {
-      return res.status(401).json({ success: false, message: "Authentication failed. User not found." });
+      user = await tables.translator.findOne(Email);
+      if (user) RoleUser = "T";
+    }
+
+    // Si pas trouvé, vérifier si c'est un admin
+    if (!user) {
+      user = await tables.admin.findOne(Email);
+      if (user) RoleUser = "A";
+    }
+
+    // Si aucun utilisateur trouvé
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication failed. User not found.",
+      });
+    }
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication failed. User not found.",
+      });
     }
 
     const isMatch = await bcrypt.compare(Password, user.Password);
 
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Authentication failed. Incorrect password." });
+      return res.status(401).json({
+        success: false,
+        message: "Authentication failed. Incorrect password.",
+      });
     }
 
     const payload = {
-      userId: user.Id_Client || user.Id_Translator || user.Id_admin ,
+      userId: user.Id_Client || user.Id_Translator || user.Id_admin,
       email: user.Email,
-      roleUser: RoleUser
+      roleUser: RoleUser,
     };
 
     const token = jwt.sign(payload, jwtSecretKey, {
-      algorithm: 'HS256',
-      expiresIn: "1h"
+      algorithm: "HS256",
+      expiresIn: "1h",
     });
     return res.status(200).json({
       success: true,
@@ -148,12 +156,13 @@ const login = async (req, res) => {
         token,
       },
     });
-
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ success: false, message: "Error during login process." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Error during login process." });
   }
-}
+};
 
 const hashPassword = async (password) => {
   const saltRounds = 10;
@@ -162,8 +171,15 @@ const hashPassword = async (password) => {
 };
 
 const signup = async (req, res, next) => {
-  const { Email, RoleUser, Password, FirstName, LastName, NumberPhone, Language } = req.body;
-
+  const {
+    Email,
+    RoleUser,
+    Password,
+    FirstName,
+    LastName,
+    NumberPhone,
+    Language,
+  } = req.body;
 
   const hash = await hashPassword(Password);
   const user = {
@@ -173,44 +189,51 @@ const signup = async (req, res, next) => {
     FirstName,
     LastName,
     NumberPhone,
-    Language
+    Language,
   };
   let userSpecId;
   let newUser;
   try {
-
     console.log(req.body);
-    
-    if (user.RoleUser === 'C' || user.RoleUser === '') {
-      newUser = await tables.client.create(user)
+
+    if (user.RoleUser === "C" || user.RoleUser === "") {
+      const existingUser = await tables.client.findOne(Email);
+      if (existingUser) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email already exits" });
+      }
+      newUser = await tables.client.create(user);
       userSpecId = newUser.Id_Client;
-    } else if (user.RoleUser === 'T') {
+    } else if (user.RoleUser === "T") {
+      const existingUser = await tables.translator.findOne(Email);
+      if (existingUser) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email already exits" });
+      }
+
       newUser = await tables.translator.create(user);
       userSpecId = newUser.Id_Translator;
     }
-    else if (user.RoleUser === 'A') {
-      newUser = await tables.admin.create(user);
-      userSpecId = newUser.Id_Admin;
-      
-    }
-   
   } catch (err) {
-    
-    return res.status(500).json({ success: false, message: "Error creating user" });
+    console.log(err.message)
+    return res
+      .status(500)
+      .json({ success: false, message: "Error creating user" });
   }
 
   let token;
   try {
     const payload = {
       userId: userSpecId,
-      email: user.Email
+      email: user.Email,
     };
 
     token = jwt.sign(payload, jwtSecretKey, {
-      algorithm: 'HS256',
-      expiresIn: "24h"
+      algorithm: "HS256",
+      expiresIn: "24h",
     });
-
   } catch (err) {
     const error = new Error("Error! Something went wrong.");
     return next(error);
@@ -225,12 +248,14 @@ const signup = async (req, res, next) => {
       token,
     },
   });
-}
+};
 
 const updateClient = async (req, res, next) => {
   const { firstName, lastName, email, phone, role, userId } = req.body;
   if (!req.body) {
-    return res.status(400).json({ success: false, message: "User ID is required" });
+    return res
+      .status(400)
+      .json({ success: false, message: "User ID is required" });
   }
 
   const updateData = {
@@ -239,21 +264,22 @@ const updateClient = async (req, res, next) => {
     FirstName: firstName,
     LastName: lastName,
     NumberPhone: phone,
-    IdClient: userId
+    IdClient: userId,
   };
-
 
   let updatedUser;
   try {
-    if (role === 'C' || role === '') {
+    if (role === "C" || role === "") {
       updatedUser = await tables.client.updateClient(updateData);
-    } else if (role === 'T') {
+    } else if (role === "T") {
       updatedUser = await tables.translator.updateClient(updateData);
     } else {
       return res.status(400).json({ success: false, message: "Invalid role" });
     }
   } catch (err) {
-    return res.status(500).json({ success: false, message: "Error updating user" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Error updating user" });
   }
 
   return res.status(200).json({
@@ -266,8 +292,6 @@ const updateClient = async (req, res, next) => {
   });
 };
 
-
-
 module.exports = {
   browse,
   read,
@@ -276,6 +300,5 @@ module.exports = {
   destroy,
   login,
   signup,
-  updateClient
+  updateClient,
 };
-

@@ -9,18 +9,18 @@ create table administrateur (
   Id_admin int NOT NULL AUTO_INCREMENT,
   Email varchar(255) not null unique,
   Password varchar(255) not null,
-  FirstName varchar(255) not null,
-  LastName varchar(255) not null,
-  NumberPhone  varchar(10) null,
+  FirstName varchar(50) not null,
+  LastName varchar(50) not null,
+  NumberPhone  varchar(15) null,
   PRIMARY KEY (Id_admin)
 );
 create table clients (
   Id_Client int NOT NULL AUTO_INCREMENT,
   Email varchar(255) not null unique,
   Password varchar(255) not null,
-  FirstName varchar(255) not null,
-  LastName varchar(255) not null,
-  NumberPhone  varchar(10) null,
+  FirstName varchar(50) not null,
+  LastName varchar(50) not null,
+  NumberPhone  varchar(15) null,
   PRIMARY KEY (Id_Client )
 );
 
@@ -28,16 +28,16 @@ create table translators (
   Id_Translator int NOT NULL AUTO_INCREMENT,
   Email varchar(255) not null,
   Password varchar(255) not null,
-  FirstName varchar(255) not null,
-  LastName varchar(255) not null,
-  NumberPhone  varchar(10) null,
+  FirstName varchar(50) not null,
+  LastName varchar(50) not null,
+  NumberPhone  varchar(15) null,
   Language  varchar(10) null,
   PRIMARY KEY (Id_Translator)
 );
 
 create table Model_docs(
  Id_Doc int NOT NULL AUTO_INCREMENT, 
- Type_Doc varchar(255) not null,
+ Type_Doc varchar(50) not null,
  Languages_source varchar(255) not null,
  Status char(1) not null,
  Real_Path_Emplacement varchar(255) not null,
@@ -52,9 +52,9 @@ create table Estimation(
   Id_Tarification  int NOT NULL AUTO_INCREMENT, 
   Email varchar(255) not null unique,
   Id_Translator int ,
-  FirstClientName varchar(255) not null,
-  LastClientName varchar(255) not null,
-  Language_Doc varchar(255) not null,
+  FirstClientName varchar(50) not null,
+  LastClientName varchar(50) not null,
+  Language_Doc varchar(50) not null,
   Id_Doc int, 
   PRIMARY KEY (Id_Tarification),
   FOREIGN KEY (Id_Translator) REFERENCES translators(Id_Translator),

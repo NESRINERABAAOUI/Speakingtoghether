@@ -8,7 +8,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /usr/src/app
 
 RUN corepack enable && \
-	corepack prepare --activate pnpm@latest && \
+	corepack prepare --activate pnpm@8.6.12 && \
 	pnpm config -g set store-dir /.pnpm-store
 
 COPY --link ./server/package.json ./server/
@@ -16,7 +16,8 @@ COPY --link ./client/package.json ./client/
 
 RUN cd client && \
     pnpm fetch && \
-    pnpm install
+    pnpm install && \
+    pnpm add -D sass
 RUN cd server && \
     pnpm fetch && \
     pnpm install

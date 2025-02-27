@@ -28,7 +28,15 @@ function Register() {
       });
       navigate("/login");
     } catch (error) {
-      console.error(error);
+      console.error("erreur ",error.message);
+      if (
+        error.error &&
+        error.response.data.message === "Email already exits "
+      ) {
+        alert("l'Email est déjà utilisé.veuillez essayer avec un autre.");
+      } else {
+        alert("Une erreur est survenue .Veuillez reéssayer");
+      }
     }
   };
 
