@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { updateAdmin, updateClient, updateTraducteur } from "../services/usersData";
+import {
+  updateAdmin,
+  updateClient,
+  updateTraducteur,
+} from "../services/usersData";
 import "../styles/ClientForm.scss";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -29,35 +33,36 @@ const ClientForm = ({ onUpdateSuccess }) => {
     setError("");
 
     try {
-      let response ;
-      if(clientData.role =='C'){
-       response = await updateClient(clientData);
-      }else if(clientData.role =='T'){
+      let response;
+      if (clientData.role == "C") {
+        response = await updateClient(clientData);
+      } else if (clientData.role == "T") {
         response = await updateTraducteur(clientData);
-      }else if(clientData.role =='A'){
+      } else if (clientData.role == "A") {
         response = await updateAdmin(clientData);
       }
 
       if (response != undefined && response.data) {
-       //onUpdateSuccess();
+        //onUpdateSuccess();
         setClientData({
           role: clientData.role,
           userId: clientData.userId,
           firstName: clientData.firstName,
           lastName: clientData.lastName,
           email: clientData.email,
-          phone:clientData.phone,
+          phone: clientData.phone,
         });
 
         if (connectedUser && connectedUser.token) {
-          connectedUser.role=clientData.role,
-          connectedUser.userId= clientData.userId,
-          connectedUser.firstName= clientData.firstName,
-          connectedUser.lastName= clientData.lastName,
-          connectedUser. email= clientData.email,
-          connectedUser.phone=clientData.phone,
-          localStorage.setItem("Profile_User", JSON.stringify(connectedUser));}
-          navigate("/profile");
+          (connectedUser.role = clientData.role),
+            (connectedUser.userId = clientData.userId),
+            (connectedUser.firstName = clientData.firstName),
+            (connectedUser.lastName = clientData.lastName),
+            (connectedUser.email = clientData.email),
+            (connectedUser.phone = clientData.phone),
+            localStorage.setItem("Profile_User", JSON.stringify(connectedUser));
+        }
+        navigate("/profile");
       } else {
         setError(!response || "Update failed");
       }
@@ -113,15 +118,15 @@ const ClientForm = ({ onUpdateSuccess }) => {
             required
           />
         </label>
-          <div >
-          <Link to="/profile" >
-                    <span >◀</span>
-                    Back
-                  </Link>
-        <button type="submit"  disabled={loading}>
-          {loading ? "Updating..." : "Update user"}
-        </button>
-          </div>
+        <div>
+          <Link to="/profile">
+            <span>◀</span>
+            Back
+          </Link>
+          <button type="submit" disabled={loading}>
+            {loading ? "Updating..." : "Update user"}
+          </button>
+        </div>
       </form>
     </div>
   );
